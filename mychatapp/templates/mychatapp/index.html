@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mychatapp</title>
+</head>
+<body>
+    <h1 id = 'textbox'>Home page</h1>
+    <input id = 'text' type = "text"/>
+    <button id = 'button1'>click me</button>
+    <script>
+        const url = `ws://${window.location.host}/googolserver/`;
+        const server = new WebSocket(url);
+        const textbox = document.getElementById('textbox');
+
+        server.onmessage = (e) => {
+            data = JSON.parse(e.data);
+            if(data.type == "chat"){
+                console.log("im here");
+                let ptag = document.createElement('p');
+                ptag.innerText = `${data.message}`;
+                textbox.appendChild(ptag);
+                console.log(data.message);
+                return;
+            }
+            console.log(data);
+        }
+
+        const button = document.getElementById('button1');
+
+        button.onclick = (e) => {
+            e.preventDefault();
+            server.send(JSON.stringify({'message' : `${document.getElementById("text").value}`}))
+        }
+        
+
+    </script>
+</body>
+</html>
