@@ -14,12 +14,13 @@
         const server = new WebSocket(url);
         const textbox = document.getElementById('textbox');
 
+
         server.onmessage = (e) => {
             data = JSON.parse(e.data);
             if(data.type == "chat"){
                 console.log("im here");
                 let ptag = document.createElement('p');
-                ptag.innerText = `${data.message}`;
+                ptag.innerText = `${data.senderr === 'me' ? 'me: ' + data.message: 'them: ' + data.message}`;
                 textbox.appendChild(ptag);
                 console.log(data.message);
                 return;
