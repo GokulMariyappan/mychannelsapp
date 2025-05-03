@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>public chat</title>
+</head>
+<body>
+    <h1>Welcome to public chat! {{user}}</h1>
+    {% if error %}
+        <p>Some Error occured!!</p>
+    {% endif %}
+    {% for message in messages reversed %}
+        {% if message.user == user %}
+        <p><b>me :</b> {{ message.message }}</p>
+        {% else %}
+        <p><b>{{ message.user }}:</b> {{ message.message }}</p>
+        {% endif %}
+    {% endfor %}
+    <form method = "POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type = "submit">▶</button>
+    </form>
+    {% for u in users %}
+        {% if u.id != user.id %}
+        <a href = "{% url "dbchat:private_chat" u.id %}">{{u}}</a>
+        {% endif %}
+    {% endfor %}
+</body>
+</html>
