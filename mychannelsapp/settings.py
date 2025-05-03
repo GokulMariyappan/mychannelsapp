@@ -39,9 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mychatapp',
+    'dbchat',
 ]
 
-
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = 'login'
 ASGI_APPLICATION = 'mychannelsapp.asgi.application'
 
 CHANNEL_LAYERS = {

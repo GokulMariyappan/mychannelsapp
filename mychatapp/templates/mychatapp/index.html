@@ -20,7 +20,7 @@
             if(data.type == "chat"){
                 console.log("im here");
                 let ptag = document.createElement('p');
-                ptag.innerText = `${data.senderr === 'me' ? 'me: ' + data.message: 'them: ' + data.message}`;
+                ptag.innerText = `${data.senderr === 'me' ? 'me: ' + data.message: data.senderr  + ': ' + data.message}`;
                 textbox.appendChild(ptag);
                 console.log(data.message);
                 return;
@@ -33,6 +33,7 @@
         button.onclick = (e) => {
             e.preventDefault();
             server.send(JSON.stringify({'message' : `${document.getElementById("text").value}`}))
+            document.getElementById("text").value = '';            
         }
         
 

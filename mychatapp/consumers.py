@@ -7,7 +7,7 @@ class MyConsumer(WebsocketConsumer):
 		self.room_group_name = 'messageroom'
 		async_to_sync(self.channel_layer.group_add)(self.room_group_name,self.channel_name)
 		self.accept()
-		print(self.channel_name)
+		print(self.channel_name, self.scope['user'])
 		self.send(json.dumps({'message' : 'socket connected to the server!', 'channel_name' : self.channel_name}))
 	 
 	def receive(self, text_data):
@@ -17,7 +17,8 @@ class MyConsumer(WebsocketConsumer):
 		async_to_sync(self.channel_layer.group_send)(self.room_group_name,{
 			'type' : 'chat_message',
 			'message' : message,
-			'sender' : self.channel_name
+			'sender' : self.channel_name,
+			'username' : self.scope['user']
 		})
 	
 	def chat_message(self, event):
@@ -27,4 +28,4 @@ class MyConsumer(WebsocketConsumer):
 			return
 		print(self.channel_name, "this dude sent a message")
 		
-		self.send(json.dumps({'senderr':'them','type' : 'chat', 'message' : message, 'channel_name' : self.channel_name}))
+		self.send(json.dumps({'senderr':f'{event['username']}','type' : 'chat', 'message' : message, 'channel_name' : self.channel_name}))
