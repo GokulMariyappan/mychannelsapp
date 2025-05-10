@@ -5,195 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>private chat</title>
     <style>
-        /* ===== Theme st1: WhatsApp Dark Inspired ===== */
         :root {
-      --bg-color: #111b21;
-      --chat-bg: #202c33;
-      --msg-bg: #2a3942;
-      --text-color: #e9edef;
-      --accent: #00a884;
-      --mine-bg: #005c4b;
-    }
+        --bg-color: #111b21;
+        --chat-bg: #202c33;
+        --msg-bg: #2a3942;
+        --text-color: #e9edef;
+        --accent: #00a884;
+        --mine-bg: #005c4b;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        }
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-family: "Segoe UI", Roboto, sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      padding: 10px;
-    }
+        body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 10px;
+        }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-      font-size: 24px;
-      color: var(--accent);
-    }
+        h1 {
+        text-align: center;
+        margin-bottom: 10px;
+        margin-left: 40px; /* Adjust this to provide space for the arrow */
+        font-size: 24px;
+        color: var(--accent);
+        }
 
-    #chatbox {
-      flex: 1;
-      overflow-y: auto;
-      background-color: var(--chat-bg);
-      padding: 15px;
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      scroll-behavior: smooth;
-    }
+        #chatbox {
+        flex: 1;
+        overflow-y: auto;
+        background-color: var(--chat-bg);
+        padding: 15px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        scroll-behavior: smooth;
+        }
 
-    .message {
-      padding: 10px 14px;
-      border-radius: 10px;
-      max-width: 70%;
-      word-wrap: break-word;
-      animation: fadeInUp 0.3s ease-out forwards;
-    }
+        .message {
+        padding: 10px 14px;
+        border-radius: 10px;
+        max-width: 70%;
+        word-wrap: break-word;
+        animation: fadeInUp 0.3s ease-out forwards;
+        }
 
-    .mine {
-      align-self: flex-end;
-      background-color: var(--mine-bg);
-      text-align: right;
-    }
+        .mine {
+        align-self: flex-end;
+        background-color: var(--mine-bg);
+        text-align: right;
+        }
 
-    .other {
-      align-self: flex-start;
-      background-color: var(--msg-bg);
-      text-align: left;
-    }
+        .other {
+        align-self: flex-start;
+        background-color: var(--msg-bg);
+        text-align: left;
+        }
 
-    .message b {
-      color: var(--accent);
-    }
+        .message b {
+        color: var(--accent);
+        }
 
-    form {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      background-color: var(--chat-bg);
-      padding: 10px;
-      border-radius: 8px;
-    }
+        form {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background-color: var(--chat-bg);
+        padding: 10px;
+        border-radius: 8px;
+        }
 
-    input[type="text"],
-    textarea,
-    input[name="message"] {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      background-color: #111;
-      color: var(--text-color);
-      resize: none;
-      height: 40px;
-    }
+        input[type="text"],
+        textarea,
+        input[name="message"] {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        background-color: #111;
+        color: var(--text-color);
+        resize: none;
+        height: 40px;
+        }
 
-    button {
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
+        button {
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        }
 
-    button:hover {
-      background-color: #019276;
-    }
+        button:hover {
+        background-color: #019276;
+        }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+        @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        }
 
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 18px;
-      }
+        @media (max-width: 600px) {
+        h1 {
+            font-size: 18px;
+        }
 
-      .message {
-        font-size: 14px;
-      }
+        .message {
+            font-size: 14px;
+        }
 
-      button {
-        width: 36px;
-        height: 36px;
-      }
-    }
-    label {
+        button {
+            width: 36px;
+            height: 36px;
+        }
+        }
+
+        label {
         color: var(--accent);
         font-weight: bold;
         margin-right: 10px;
         font-size: 15px;
-    }
+        }
 
-    .header-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  padding: 10px;
-}
+        .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        position: relative;
+        padding: 10px;
+        }
 
-.back-arrow-container {
-  position: absolute;
-  left: 10px; /* Adjust this to position it in the leftmost corner */
-}
+        .back-arrow-container {
+        position: absolute;
+        left: 10px; /* Adjust this to position it in the leftmost corner */
+        }
 
-h1 {
-  margin-left: 40px; /* Adjust this to provide space for the arrow */
-  color: var(--accent);
-  font-size: 24px;
-}
+        .back-arrow {
+        cursor: pointer;
+        color: var(--accent); /* Adjust the color */
+        transition: transform 0.2s ease;
+        }
 
-.back-arrow {
-  cursor: pointer;
-  color: var(--accent); /* Adjust the color */
-  transition: transform 0.2s ease;
-}
-
-.back-arrow:hover {
-  transform: scale(1.1);
-}
-
+        .back-arrow:hover {
+        transform: scale(1.1);
+        }
 
     </style>
 </head>
 <body>
     <div class="header-container">
-        <span class="back-arrow-container">
+        <a class="back-arrow-container" href="{% url "dbchat:homepage" %}">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" class="back-arrow" viewBox="0 0 24 24">
             <path d="M19 12H5m7 7l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-        </span>
+        </a>
         <h1>{{ second_user }} 😍</h1>
       </div>
     <input type = "hidden" id  = "second_user" value = "{{ second_user.id }}">
     {% if error %}
         <p>{{error}}</p>
     {% endif %}
-    {%  if messages %}
+    
     <section id = 'chatbox'>
-
+        {%  if messages %}
         {% for message in messages reversed %}
         {% if message.user == user %}
         <p class = 'message mine'><b>me: </b>{{ message.message }}</p>
@@ -205,13 +199,16 @@ h1 {
         <p>Start Convo!</p>
         {% endif %}
     </section>
-    <form method = "POST">
+    <form id = 'form' novalidate method = "POST">
         {% csrf_token %}
         <label for="id_message">Message</label>
         {{ form.message }}
-        <button onclick = "sendMessage()" type = "submit">▶</button>
+        <button onclick = "sendMessage()">▶</button>
     </form>
     <script>
+        document.getElementById('form').addEventListener('submit', (event) => {
+            event.preventDefault();
+        });
         let chatbox = document.getElementById('chatbox');
         let ws = new WebSocket(`ws://${window.location.host}/private_chat/${document.getElementById("second_user").value}/`);
         function scrollToBottom() {

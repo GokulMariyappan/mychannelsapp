@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'dbchat',
 ]
 
-LOGIN_REDIRECT_URL = 'chatsapp/'
+LOGIN_REDIRECT_URL = 'dbchat:homepage'
 LOGIN_URL = 'dbchat:login'
 ASGI_APPLICATION = 'mychannelsapp.asgi.application'
 
