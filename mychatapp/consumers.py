@@ -24,8 +24,8 @@ class MyConsumer(WebsocketConsumer):
 	def chat_message(self, event):
 		message = event['message']
 		if(event['sender'] == self.channel_name):
-			self.send(json.dumps({'senderr' : 'me','type' : 'chat', 'message' : message, 'channel_name' : self.channel_name}))
+			self.send(json.dumps({'senderr' : 'me','type' : 'chat', 'message' : message, 'channel_name' : self.channel_name}))			
 			return
 		print(self.channel_name, "this dude sent a message")
 		
-		self.send(json.dumps({'senderr':f'{event['username']}','type' : 'chat', 'message' : message, 'channel_name' : self.channel_name}))
+		self.send(json.dumps({'senderr':f'{event['username']}','type' : 'chat', 'message' : message, 'channel_name' : self.channel_name}))		

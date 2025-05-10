@@ -5,6 +5,9 @@ from .models import ChatMessage, Group
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import ChatForm
 from django.contrib.auth.models import User
+import json 
+from channels.generic.websocket import WebsocketConsumer
+from asgiref.sync import async_to_sync
 # Create your views here.
 
 class HomeView(LoginRequiredMixin, View):
@@ -30,9 +33,9 @@ class HomeView(LoginRequiredMixin, View):
 
 def generate_group_name(id1, id2):
     if(id1 > id2):
-        return f'{id2},{id1}'
+        return f'{id2}_{id1}'
     else:
-        return f'{id1},{id2}'
+        return f'{id1}_{id2}'
 
 class PrivateChatView(LoginRequiredMixin, View):
     def get(self, request, id):
@@ -59,3 +62,70 @@ class PrivateChatView(LoginRequiredMixin, View):
         messages = ChatMessage.objects.filter(group = group)
         error = 'Something went wrong!'
         return render(request, 'dbchat/private_chat.html', {'error' : error, 'second_user' : second_user, 'messages' : messages, 'user' : request.user, 'form' : form})
+    
+class PublicChatConsumer(WebsocketConsumer):
+    def connect(self):
+        if self.scope['user'].is_authenticated:
+            self.room_group_name = 'public_chat'
+            async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
+            self.accept()
+            self.send(text_data = json.dumps({'message' : 'websocket connected(public chat)','type' : 'init'}))
+        else:
+            self.close()
+        
+    def receive(self, text_data=None):
+        received_message = json.loads(text_data)
+        received_message = received_message['message']
+        ChatMessage.objects.create(user = self.scope['user'], group = Group.objects.get(name = 'public_chat'), message = received_message)
+        print(f"received message : {received_message} from {self.scope['user']}")
+        async_to_sync(self.channel_layer.group_send)(self.room_group_name,{'type':'chat_message', 'message' : received_message, 'sender' : self.channel_name, 'username' : self.scope['user'].username})
+
+    def chat_message(self, event):
+        message = event['message']
+        if(event['sender'] == self.channel_name):
+            self.send(text_data = json.dumps({'sender' : 'Me', 'type': 'websocket_response', 'message' : message}))
+            print(f"sent by {self.scope['user']}")
+            return
+        self.send(json.dumps({'sender' : event['username'], 'type': 'websocket_response', 'message' : message}))
+        print(f"sent by {self.scope['user']}")
+
+class PrivateChatConsumer(WebsocketConsumer):
+    second_user = None
+    def connect(self):
+        if(self.scope['user'].is_authenticated):
+            sid = self.scope['url_route']['kwargs']['id']
+            room_group_name = generate_group_name(self.scope['user'].id, sid)
+            self.room_group_name = room_group_name
+            async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
+            self.second_user = User.objects.get(id = sid)
+            self.accept()
+            self.send(json.dumps({'message' : f'sid: {sid}, {room_group_name}', 'type' : 'check_connection'}))
+        else:
+            self.close()
+    
+    def receive(self, text_data = None):
+        received_message = json.loads(text_data)['message']
+        try:
+            group = Group.objects.get(name = generate_group_name(self.scope['user'].id, self.second_user.id))
+        except:
+            group = Group.objects.create(name = generate_group_name(self.scope['user'].id, self.second_user.id))
+        ChatMessage.objects.create(user = self.scope['user'], group = group, message = received_message)
+        print(f"{self.scope['user']} sent {received_message} to {self.second_user}")
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                'type' : 'chat_message',
+                'message' : received_message,
+                'sender' : self.channel_name,
+                'username' : self.scope['user'].username
+            }
+        )
+
+    def chat_message(self, event):
+        message = event['message']
+
+        if(event['sender'] == self.channel_name):
+            self.send(text_data = json.dumps({'sender': 'Me', 'type' : 'websocket_response', 'message' : message}))
+            return
+        self.send(text_data = json.dumps({'sender': event['username'], 'type' : 'websocket_response', 'message' : message}))
+

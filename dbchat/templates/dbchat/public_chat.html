@@ -10,22 +10,49 @@
     {% if error %}
         <p>Some Error occured!!</p>
     {% endif %}
-    {% for message in messages reversed %}
+    <section id = "chatbox">
+        {% for message in messages reversed %}
         {% if message.user == user %}
-        <p><b>me :</b> {{ message.message }}</p>
+        <p class = 'message'><b>me :</b> {{ message.message }}</p>
         {% else %}
-        <p><b>{{ message.user }}:</b> {{ message.message }}</p>
+        <p class = 'message'><b>{{ message.user }}:</b> {{ message.message }}</p>
         {% endif %}
-    {% endfor %}
+        {% endfor %}
+    </section>
     <form method = "POST">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type = "submit">▶</button>
+        <button type = "submit" onclick="sendMessage()">▶</button>
     </form>
     {% for u in users %}
         {% if u.id != user.id %}
         <a href = "{% url "dbchat:private_chat" u.id %}">{{u}}</a>
         {% endif %}
     {% endfor %}
+    <script>
+        let ws =  new WebSocket(`ws://${window.location.host}/public_chat/`);
+
+        function sendMessage(){
+            let message = document.getElementById('id_message').value;
+            ws.send(JSON.stringify({'message' : message}));
+            document.getElementById('id_message').value = '';
+        }
+
+        ws.onmessage = (event) => {
+            let response = JSON.parse(event.data);
+            console.log(response);
+            if(response.type === 'websocket_response'){
+                let chatbox = document.getElementById('chatbox');
+                let sender = document.createElement('b');
+                sender.innerText = `${response.sender}: `;
+                let message = document.createElement('p');
+                message.className = 'message';
+                message.appendChild(sender);
+                message.append(response.message);
+                chatbox.appendChild(message);
+                chatbox.scrollTop = chatbox.scrollHeight;
+            }
+        }
+    </script>
 </body>
 </html>
