@@ -5,4 +5,4 @@ from .models import ChatMessage, Group
 class ChatForm(ModelForm):
     class Meta:
         model = ChatMessage
-        fields = ['message']
+        fields = ['message', 'files']

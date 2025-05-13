@@ -170,6 +170,58 @@
         transform: scale(1.1);
         }
 
+        .file-thumbnail {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            transition: transform 0.2s ease;
+            }
+
+            .file-thumbnail:hover {
+            transform: scale(1.02);
+            }
+
+            .attachment-bubble {
+            display: inline-block;
+            /* margin-bottom: 8px; */
+            min-width: 180px;
+            max-width: 80%;
+            padding: 6px;
+            background: #005c4b; 
+            border-radius: 10px;
+            text-align: center;
+            }
+            
+            .otherfile{
+              background-color: var(--msg-bg);
+            }
+
+            .message.other .attachment-bubble {
+            background: #ffffff; 
+            }
+
+            .file-name {
+            margin-top: 4px;
+            font-size: 0.9rem;
+            color: #e9edef;
+            word-break: break-word;
+            }
+
+            #file_label {
+              cursor: pointer;
+            }
+
+            #file_label .clip-icon {
+              transition: stroke 0.2s ease, transform 0.2s ease;
+            }
+
+            #file_label:hover .clip-icon {
+              stroke: #bbbbbb; /* Light gray on hover */
+              transform: rotate(135deg) scale(1.1);
+            }
+
     </style>
 </head>
 <body>
@@ -188,13 +240,43 @@
     
     <section id = 'chatbox'>
         {%  if messages %}
-        {% for message in messages reversed %}
-        {% if message.user == user %}
-        <p class = 'message mine'><b>me: </b>{{ message.message }}</p>
-        {% else %}
-        <p class = 'message other'><b>{{ message.user }}: </b>{{ message.message }}</p>
-        {% endif %}
-        {% endfor %}
+            {% for message in messages reversed %}
+                {% if message.user == user %}
+                    {% if message.files %}
+                        <div class="message mine attachment-bubble">
+                            <a target="_blank" href="{{ message.files.url }}">
+                            <img src="/media/fileattachment.jpg" alt="File Attachment" class="file-thumbnail">
+                            </a>
+                            <div class="file-name">{{ message.files.name }}</div>
+                        </div>
+                    {% endif %}
+                    {% if message.image %}
+                        <div class="image mine">
+                            <img src="{{ message.image.url }}" alt="image" class="imageObject"/>
+                        </div>
+                    {% endif %}
+                    {% if message.message %}
+                        <p class = 'message mine'><b>me: </b>{{ message.message }}</p>
+                    {% endif %}
+                {% else %}
+                    {% if message.files %}
+                        <div class="message other attachment-bubble otherfile">
+                            <a target="_blank" href="{{ message.files.url }}">
+                            <img src="/media/fileattachment.jpg" alt="File Attachment" class="file-thumbnail">
+                            </a>
+                            <div class="file-name">{{ message.files.name }}</div>
+                        </div>
+                    {% endif %}
+                    {% if message.image %}
+                        <div class="image other">
+                            <img src="{{ message.image.url }}" alt="image" class="imageObject"/>
+                        </div>
+                    {% endif %}
+                    {% if message.message %}
+                        <p class = 'message other'><b>{{ message.user }}: </b>{{ message.message }}</p>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
         {% else %}
         <p>Start Convo!</p>
         {% endif %}
@@ -203,6 +285,18 @@
         {% csrf_token %}
         <label for="id_message">Message</label>
         {{ form.message }}
+        <label for="id_files" id="file_label">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="44" height="30"
+                 viewBox="0 0 24 24"
+                 fill="none" stroke="white"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 class="clip-icon"
+                 style="transform: rotate(135deg); transform-origin: center;">
+              <path d="M16.5 6.5l-7.8 7.8a3 3 0 104.2 4.2l8.2-8.2a5 5 0 10-7.1-7.1L4.9 12.9a7 7 0 109.9 9.9l10.1-10.1"/>
+            </svg>
+          </label>        
+        <input type = "file" name = "files" id = "id_files" style="display: none;"/>
         <button onclick = "sendMessage()">▶</button>
     </form>
     <script>
