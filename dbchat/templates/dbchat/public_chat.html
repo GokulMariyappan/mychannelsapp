@@ -319,7 +319,7 @@
         {% endfor %}
       </section>
     
-      <form method="POST" novalidate enctype="multipart/form-data">
+      <form id = 'form' method="post" novalidate>
         {% csrf_token %}
         <input type="text" name="message" id="id_message" required>
         <label for="id_files" id="file_label">
@@ -334,38 +334,103 @@
           </svg>
         </label>        
         <input type = "file" name = "files" id = "id_files" style="display: none;"/>
-        <button type="submit" onclick="sendMessage()">▶</button>
+        <button onclick="sendMessage()">▶</button>
       </form>
     
       <script>
+        document.getElementById('form').onsubmit = function(event){
+          event.preventDefault();
+        }
+        window.onload = scrollToBottom;
         const ws = new WebSocket(`ws://${window.location.host}/public_chat/`);
-    
-        function sendMessage() {
-          const messageInput = document.getElementById('id_message');
-          const message = messageInput.value;
-          if (message !== '') {
-            ws.send(JSON.stringify({ message: message }));
-            messageInput.value = '';
-          }
+        let cbox = document.getElementById('chatbox');
+        function scrollToBottom(){
+          cbox.scrollTop = cbox.scrollHeight;
         }
 
-        window.onload = () => {
-            document.getElementById('chatbox').scrollTop = document.getElementById('chatbox').scrollHeight;
+        async function sendMessage() {
+          let chatbox = document.getElementById('chatbox');
+          async function readFileAsBase64(file) {
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+
+                    reader.onload = () => {
+                        const base64 = reader.result.split(',')[1];
+                        resolve(base64);
+                    };
+
+                    reader.onerror = () => {
+                        reject("Failed to read file.");
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            }
+
+          const messageInput = document.getElementById('id_message');
+          const message = messageInput.value;
+
+          let forminput = document.getElementById('id_files');
+          let bool = forminput.files.length > 0;
+          let filename, filetype, file;
+          if(bool){
+            filename = forminput.files[0].name;
+            filetype = forminput.files[0].type;
+            file = await readFileAsBase64(forminput.files[0]);
+          }
+
+
+
+          
+          ws.send(JSON.stringify({ 'message': message, 'file' : bool, 'fileData': file, 'filename' : filename, 'filetype' :  filetype }));
+          messageInput.value = '';
+          document.getElementById('id_files').value = "";
+          scrollToBottom();
         }
+
+        
     
         ws.onmessage = (event) => {
           const response = JSON.parse(event.data);
           if (response.type === 'websocket_response') {
             const chatbox = document.getElementById('chatbox');
-            const message = document.createElement('p');
-            message.className = response.sender === 'Me' ? 'message mine' : 'message other';
-    
-            const sender = document.createElement('b');
-            sender.innerText = `${response.sender}: `;
-            message.appendChild(sender);
-            message.append(response.message);
-            chatbox.appendChild(message);
-            chatbox.scrollTop = chatbox.scrollHeight;
+            if(response.file){
+              let div = document.createElement('div');
+              div.className = response.sender === 'Me' ? 'message mine attachment-bubble' : 'message other attachment-bubble otherfile';
+              let a = document.createElement('a');
+              a.target = '_blank';
+              a.href = `/media/${response.file}`;
+              let img = document.createElement('img');
+              img.src = '/media/fileattachment.jpg';
+              img.alt = 'File Attachment';
+              img.className = 'file-thumbnail';
+              a.appendChild(img);
+              div.appendChild(a);
+              let filename = document.createElement('div');
+              filename.className = 'file-name';
+              filename.innerText = `${response.file}`;
+              div.appendChild(filename);
+              chatbox.appendChild(div);
+            }
+            if(response.image){
+              let div = document.createElement('div');
+              div.className = response.sender === 'Me' ? 'image mine' : 'image other';
+              let img = document.createElement('img');
+              img.src = `/media/${response.image}`;
+              img.alt = 'image'; img.className = 'imageObject';
+              div.appendChild(img);
+              chatbox.appendChild(div);
+            }
+            if(response.message){
+              const message = document.createElement('p');
+              message.className = response.sender === 'Me' ? 'message mine' : 'message other';
+              const sender = document.createElement('b');
+              sender.innerText = `${response.sender}: `;
+              message.appendChild(sender);
+              message.append(response.message);
+              chatbox.appendChild(message);
+            }
+            scrollToBottom();
           }
         }
     

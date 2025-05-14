@@ -1,3 +1,4 @@
+import base64
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
@@ -8,16 +9,21 @@ from django.contrib.auth.models import User
 import json 
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
-# Create your views here.
+from django.core.files.base import ContentFile
 
 class HomeView(LoginRequiredMixin, View):
     users = User.objects.all()
     def get(self,  request):
         form = ChatForm()
-        messages = ChatMessage.objects.filter(group = Group.objects.get(name = 'public_chat'))
+        try:
+            group = Group.objects.get(name = 'public_chat')
+        except:
+            group = Group.objects.create(name = 'public_chat')
+        messages = ChatMessage.objects.filter(group = group)
         return render(request , "dbchat/public_chat.html", {'messages' : messages, 'user' : request.user, 'form' : form, 'users' : self.users})
     
     def post(self, request):
+        print('im called im the POSTTT')
         form = ChatForm(request.POST)
         if form.is_valid():
             message = form.save(commit = False)
@@ -74,19 +80,36 @@ class PublicChatConsumer(WebsocketConsumer):
             self.close()
         
     def receive(self, text_data=None):
-        received_message = json.loads(text_data)
-        received_message = received_message['message']
-        ChatMessage.objects.create(user = self.scope['user'], group = Group.objects.get(name = 'public_chat'), message = received_message)
+        message = json.loads(text_data)
+        received_message = message['message']
+        fileObject = None
+        image = None
+        if message['file']:
+            data = base64.b64decode(message['fileData'])
+            fileObject = ContentFile(data, name = message['filename'])
+            if message['filetype'].startswith('image'):
+                image = fileObject
+                fileObject = None
+        message = ChatMessage.objects.create(user = self.scope['user'], group = Group.objects.get(name = 'public_chat'), message = received_message, image = image, files = fileObject)
         print(f"received message : {received_message} from {self.scope['user']}")
-        async_to_sync(self.channel_layer.group_send)(self.room_group_name,{'type':'chat_message', 'message' : received_message, 'sender' : self.channel_name, 'username' : self.scope['user'].username})
+        async_to_sync(self.channel_layer.group_send)(self.room_group_name,{'type':'chat_message', 'message' : message, 'sender' : self.channel_name, 'username' : self.scope['user'].username})
 
     def chat_message(self, event):
-        message = event['message']
+        data = event['message']
+        message = None
+        fileURL = None
+        image = None
+        if data.message:
+            message = data.message
+        if data.files:
+            fileURL = data.files.url[7:]
+        if data.image:
+            image = data.image.url[7:]
         if(event['sender'] == self.channel_name):
-            self.send(text_data = json.dumps({'sender' : 'Me', 'type': 'websocket_response', 'message' : message}))
+            self.send(text_data = json.dumps({'sender' : 'Me', 'type': 'websocket_response', 'message' : message, 'file' : fileURL, 'image' : image}))
             print(f"sent by {self.scope['user']}")
             return
-        self.send(json.dumps({'sender' : event['username'], 'type': 'websocket_response', 'message' : message}))
+        self.send(json.dumps({'sender' : event['username'], 'type': 'websocket_response', 'message' : message, 'file' : fileURL, 'image' : image}))
         print(f"sent by {self.scope['user']}")
 
 class PrivateChatConsumer(WebsocketConsumer):
@@ -104,28 +127,49 @@ class PrivateChatConsumer(WebsocketConsumer):
             self.close()
     
     def receive(self, text_data = None):
-        received_message = json.loads(text_data)['message']
+        clientData = json.loads(text_data)
+        received_message = clientData['message']
+        fileBool = clientData['file']
+        fileObject = None
+        image = None
+        if(fileBool):
+            data = clientData.get('fileData')
+            fileData = base64.b64decode(data)
+            fileObject = ContentFile(fileData, name = clientData['filename'])
+        
+        if(clientData.get('filetype')):
+            if(clientData.get('filetype').startswith('image')):
+                image = fileObject
+                fileObject = None
         try:
             group = Group.objects.get(name = generate_group_name(self.scope['user'].id, self.second_user.id))
         except:
             group = Group.objects.create(name = generate_group_name(self.scope['user'].id, self.second_user.id))
-        ChatMessage.objects.create(user = self.scope['user'], group = group, message = received_message)
+        message = ChatMessage.objects.create(user = self.scope['user'], group = group, message = received_message, image = image, files = fileObject)
         print(f"{self.scope['user']} sent {received_message} to {self.second_user}")
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
                 'type' : 'chat_message',
-                'message' : received_message,
+                'message' : message,
                 'sender' : self.channel_name,
                 'username' : self.scope['user'].username
             }
         )
 
     def chat_message(self, event):
-        message = event['message']
+        message = None
+        fileURL = None
+        image = None
+        if event['message'].message:
+            message = event['message'].message
+        if event['message'].files:
+            fileURL = event['message'].files.url[7:]
+        if event['message'].image:
+            image = event['message'].image.url[7:]
 
         if(event['sender'] == self.channel_name):
-            self.send(text_data = json.dumps({'sender': 'Me', 'type' : 'websocket_response', 'message' : message}))
+            self.send(text_data = json.dumps({'sender': 'Me', 'type' : 'websocket_response', 'message' : message, 'file' : fileURL, 'image' : image}))
             return
-        self.send(text_data = json.dumps({'sender': event['username'], 'type' : 'websocket_response', 'message' : message}))
+        self.send(text_data = json.dumps({'sender': event['username'], 'type' : 'websocket_response', 'message' : message, 'file' : fileURL, 'image' : image}))
 

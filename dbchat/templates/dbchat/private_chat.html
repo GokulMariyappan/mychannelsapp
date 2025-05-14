@@ -231,7 +231,7 @@
             <path d="M19 12H5m7 7l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
-        <h1>{{ second_user }} 😍</h1>
+        <h1>{{ second_user }} 😎</h1>
       </div>
     <input type = "hidden" id  = "second_user" value = "{{ second_user.id }}">
     {% if error %}
@@ -305,35 +305,112 @@
         });
         let chatbox = document.getElementById('chatbox');
         let ws = new WebSocket(`ws://${window.location.host}/private_chat/${document.getElementById("second_user").value}/`);
+
         function scrollToBottom() {
             chatbox.scrollTop = chatbox.scrollHeight;
         }
+
         window.onload = scrollToBottom;
+
         ws.onmessage = (event) => {
             let data = JSON.parse(event.data);
             console.log(data);
             if(data.type === 'websocket_response'){
                 console.log("we are here");
-                let message = document.createElement('p');
-                message.className = 'message';
-                let sender = document.createElement('b');
-                sender.innerText = `${data.sender}: `;
-                if(data.sender !== 'Me'){
-                    message.classList.add('other');
-                }else{
-                    message.classList.add('mine');
+                if(data.file){
+                    let attachdiv = document.createElement('div');
+                    if(data.sender !== 'Me'){
+                        attachdiv.className = 'message other attachment-bubble otherfile';
+                    }else{
+                        attachdiv.className = 'message mine attachment-bubble';
+                    }
+                    let a = document.createElement('a');
+                    a.target = '_blank';
+                    a.href = `/media/${data.file}`;
+                    let image = document.createElement('img');
+                    image.src = '/media/fileattachment.jpg';
+                    image.alt = 'FileAttachment📎'
+                    image.className = 'file-thumbnail';
+                    a.appendChild(image);
+                    let div = document.createElement('div');
+                    div.className = 'file-name';
+                    div.innerText = data.file;
+                    attachdiv.appendChild(a);
+                    attachdiv.appendChild(div);
+                    chatbox.appendChild(attachdiv);
                 }
-                message.appendChild(sender);
-                message.append(data.message);
-                chatbox.appendChild(message); 
+                if(data.image){
+                    let div = document.createElement('div');
+                    let image = document.createElement('img');
+                    image.src = `/media/${data.image}`;
+                    image.className = 'imageObject';
+                    image.alt = 'image';
+                    if(data.sender !== 'Me'){
+                        div.className = 'image other';
+                    }else{
+                        div.className = 'image mine';
+                    }
+                    div.appendChild(image);
+                    chatbox.appendChild(div);
+                }
+                if(data.message){
+                    let message = document.createElement('p');
+                    message.className = 'message';
+                    let sender = document.createElement('b');
+                    sender.innerText = `${data.sender}: `;
+                    if(data.sender !== 'Me'){
+                        message.classList.add('other');
+                    }else{
+                        message.classList.add('mine');
+                    }
+                    message.appendChild(sender);
+                    message.append(data.message);
+                    chatbox.appendChild(message); 
+                }
                 scrollToBottom();
             }
         }
 
-        function sendMessage(){
+        async function sendMessage(){
+
+            async function readFileAsBase64(file) {
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+
+                    reader.onload = () => {
+                        const base64 = reader.result.split(',')[1];
+                        resolve(base64);
+                    };
+
+                    reader.onerror = () => {
+                        reject("Failed to read file.");
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            }
+
             let message = document.getElementById('id_message');
-            ws.send(JSON.stringify({'message' : message.value}));
-            message.value = '';
+            message = message.value ? message.value : null;
+            let file = document.getElementById('id_files');
+            let bool = file.files.length > 0;
+            let filename, fileType;
+            if(bool){
+                filename = file.files[0].name;
+                fileType = file.files[0].type;
+            }
+            if(file.files.length > 0){
+                console.log('reading file');
+                file = file.files[0];
+                file = await readFileAsBase64(file);
+                console.log(file);
+            }else{
+                file = null;
+            }
+
+            ws.send(JSON.stringify({'message' : message, 'file' : bool,  'fileData': file, 'filename' : filename, 'filetype' :  fileType}));
+            document.getElementById('id_message').value = '';
+            document.getElementById('id_files').value = '';
             scrollToBottom();
         }
     </script>
