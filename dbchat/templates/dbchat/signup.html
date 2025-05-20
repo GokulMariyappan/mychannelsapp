@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up!</title>
+    <style>
+        /* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Form Styling */
+form {
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Labels and Inputs */
+label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+  color: #cccccc;
+}
+
+input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  color: #e0e0e0;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: #25D366;
+}
+
+/* Error Messages */
+span {
+  display: block;
+  margin-top: -0.8rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: red;
+}
+
+/* Submit Button */
+button[type="submit"] {
+  background-color: #25D366;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.2rem;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover:enabled {
+  background-color: #1ebe5d;
+}
+
+button:disabled {
+  background-color: #444;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#link {
+  display: block;
+  margin-top: 1rem;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+}
+
+#link a {
+  color: #25d366; /* WhatsApp green */
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+#link a:hover {
+  color: #1ebe5d;
+  text-decoration: underline;
+}
+
+    </style>
+</head>
+<body>
+    <form method = "POST">
+        {% csrf_token %}
+        <label for = "username">Username: </label>
+        <input type = "text" name = "username" id = "username" required>
+        <span id = "username-error"></span>
+        <label for = "password1">Password: </label>
+        <input type = "password" name = "password1" id = "password1" required>
+        <span id = "password-error1"></span>
+        <label for = "password2">Confirm Password: </label>
+        <input type = "password" name = "password2" id = "password2" required>
+        <span id = "password-error2"></span>
+        <button id = "submit" disabled type = submit>Sign up</button>
+        <span id = "link">Already have an account? <a href = "{% url "dbchat:login" %}">Log in</a></span>
+    </form>
+
+    <script>
+        const username = document.getElementById('username');
+        const password1 = document.getElementById('password1');
+        const password2 = document.getElementById('password2');
+        const usernameError = document.getElementById('username-error');
+        const passwordError1 = document.getElementById('password-error1');
+        const passwordError2 = document.getElementById('password-error2');
+        let userReady = false;
+        let passwordReady = false;
+        function enableButton(){
+            if(userReady && passwordReady){
+                document.getElementById('submit').disabled = false;
+            }
+        }
+        
+        username.oninput = () => {
+            if(username.value.length < 3) {
+                usernameError.innerText = "username must be atleast 3 characters long";
+                usernameError.style.color = "red";
+            }else{
+                usernameError.innerText = "";
+                usernameError.style.display = "none";
+            }
+        }
+
+        username.onchange = async function(){
+            if(username.value.length >= 3){
+                console.log("we are here");
+                let response = await fetch(`http://localhost:8000/chatsapp/check_username/${username.value}/`);
+                console.log(response);
+                if(response.status >= 200 && response.status < 300){
+                    let data = await response.json();
+                    console.log(data);
+                    if(data.exists){
+                        usernameError.innerText = "username already exists!";
+                        usernameError.style.display = 'block';
+                        usernameError.style.color = "red";
+                    }else{
+                        userReady = true;
+                        enableButton();
+                    }
+                }
+            }
+        }
+
+        password1.oninput = () => {
+            if(password1.value.length < 8) {
+                passwordError1.innerText = "username must be atleast 8 characters long";
+                passwordError1.style.color = "red";
+            }else{
+                passwordError1.innerText = "";
+                passwordError1.style.display = "none";
+            }
+        }
+
+        password2.oninput = () => {
+            if(password2.value !== password1.value) {
+                passwordError2.innerText = "passwords do not match!";
+                passwordError2.style.color = "red";
+            }else{
+                passwordError2.innerText = "";
+                passwordError2.style.display = "none";
+                passwordReady = true;
+                enableButton();
+            }
+        }
+    </script>
+</body>
+</html>

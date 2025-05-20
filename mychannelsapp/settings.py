@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'channels',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 LOGIN_REDIRECT_URL = 'dbchat:homepage'
+LOGOUT_REDIRECT_URL = 'dbchat:login'
 LOGIN_URL = 'dbchat:login'
 ASGI_APPLICATION = 'mychannelsapp.asgi.application'
 
@@ -53,7 +55,8 @@ CHANNEL_LAYERS = {
 }
 
 MIDDLEWARE = [
-    #'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -145,3 +148,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 X_FRAME_OPTIONS = 'ALLOWALL'
+
+CORS_ALLOW_ALL_ORIGINS = True

@@ -1,0 +1,216 @@
+:root {
+        --bg-color: #111b21;
+        --chat-bg: #202c33;
+        --msg-bg: #2a3942;
+        --text-color: #e9edef;
+        --accent: #00a884;
+        --mine-bg: #005c4b;
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+background-color: var(--bg-color);
+color: var(--text-color);
+font-family: "Segoe UI", Roboto, sans-serif;
+display: flex;
+flex-direction: column;
+height: 100vh;
+padding: 10px;
+}
+
+h1 {
+text-align: center;
+margin-bottom: 10px;
+margin-left: 40px; /* Adjust this to provide space for the arrow */
+font-size: 24px;
+color: var(--accent);
+}
+
+#chatbox {
+flex: 1;
+overflow-y: auto;
+background-color: var(--chat-bg);
+padding: 15px;
+border-radius: 10px;
+display: flex;
+flex-direction: column;
+gap: 10px;
+scroll-behavior: smooth;
+}
+
+.message {
+padding: 10px 14px;
+border-radius: 10px;
+max-width: 70%;
+word-wrap: break-word;
+animation: fadeInUp 0.3s ease-out forwards;
+}
+
+.mine {
+align-self: flex-end;
+background-color: var(--mine-bg);
+text-align: right;
+}
+
+.other {
+align-self: flex-start;
+background-color: var(--msg-bg);
+text-align: left;
+}
+
+.message b {
+color: var(--accent);
+}
+
+form {
+margin-top: 10px;
+display: flex;
+gap: 10px;
+align-items: center;
+background-color: var(--chat-bg);
+padding: 10px;
+border-radius: 8px;
+}
+
+input[type="text"],
+textarea,
+input[name="message"] {
+flex: 1;
+padding: 10px;
+border: none;
+border-radius: 6px;
+font-size: 16px;
+background-color: #111;
+color: var(--text-color);
+resize: none;
+height: 40px;
+}
+
+button {
+background-color: var(--accent);
+color: white;
+border: none;
+border-radius: 50%;
+width: 40px;
+height: 40px;
+font-size: 16px;
+cursor: pointer;
+transition: background 0.3s ease;
+}
+
+button:hover {
+background-color: #019276;
+}
+
+@keyframes fadeInUp {
+from {
+    opacity: 0;
+    transform: translateY(10px);
+}
+to {
+    opacity: 1;
+    transform: translateY(0);
+}
+}
+
+@media (max-width: 600px) {
+h1 {
+    font-size: 18px;
+}
+
+.message {
+    font-size: 14px;
+}
+
+button {
+    width: 36px;
+    height: 36px;
+}
+}
+
+label {
+color: var(--accent);
+font-weight: bold;
+margin-right: 10px;
+font-size: 15px;
+}
+
+.header-container {
+display: flex;
+align-items: center;
+justify-content: flex-start;
+position: relative;
+padding: 10px;
+}
+
+.back-arrow-container {
+position: absolute;
+left: 10px; /* Adjust this to position it in the leftmost corner */
+}
+
+.back-arrow {
+cursor: pointer;
+color: var(--accent); /* Adjust the color */
+transition: transform 0.2s ease;
+}
+
+.back-arrow:hover {
+transform: scale(1.1);
+}
+
+.file-thumbnail {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease;
+    }
+
+.file-thumbnail:hover {
+transform: scale(1.02);
+}
+
+.attachment-bubble {
+display: inline-block;
+/* margin-bottom: 8px; */
+min-width: 180px;
+max-width: 80%;
+padding: 6px;
+background: #005c4b; 
+border-radius: 10px;
+text-align: center;
+}
+
+.otherfile{
+    background-color: var(--msg-bg);
+}
+
+.message.other .attachment-bubble {
+background: #ffffff; 
+}
+
+.file-name {
+margin-top: 4px;
+font-size: 0.9rem;
+color: #e9edef;
+word-break: break-word;
+}
+
+#file_label {
+    cursor: pointer;
+}
+
+#file_label .clip-icon {
+    transition: stroke 0.2s ease, transform 0.2s ease;
+}
+
+#file_label:hover .clip-icon {
+    stroke: #bbbbbb; /* Light gray on hover */
+    transform: rotate(135deg) scale(1.1);
+}

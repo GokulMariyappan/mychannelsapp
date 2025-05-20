@@ -22,5 +22,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('mychatapp.urls')),
-    path('chatsapp/', include('dbchat.urls')),
+    path('chatsapp/', include('dbchat.urls', namespace='dbchat')),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

@@ -1,5 +1,5 @@
 import base64
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views import View
 from .models import ChatMessage, Group
@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import ChatForm
 from django.contrib.auth.models import User
 import json 
+from django.urls import reverse
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.core.files.base import ContentFile
@@ -173,3 +174,17 @@ class PrivateChatConsumer(WebsocketConsumer):
             return
         self.send(text_data = json.dumps({'sender': event['username'], 'type' : 'websocket_response', 'message' : message, 'file' : fileURL, 'image' : image}))
 
+class CheckUsernameView(View):
+    def get(self, request, username):
+            exists = User.objects.filter(username = username).exists()
+            return JsonResponse({'exists' : exists})
+    
+class SignUpView(View):
+    def get(self, request):
+        return render(request, 'dbchat/signup.html')
+    
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password2')
+        User.objects.create_user(username = username, password = password)
+        return HttpResponseRedirect(reverse('dbchat:login'))
